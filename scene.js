@@ -18,10 +18,6 @@ document.body.appendChild(renderer.domElement);
 const material = new THREE.MeshPhongMaterial({ color: 0xddddcc, side: THREE.DoubleSide });
 
 
-// const loader = new THREE.ColladaLoader();
-// loader.load("Objects/Tree/Blender.dae", function(dae) {
-//     scene.add(dae.scene);
-// });
 
 const Floorgeometry = new THREE.BoxGeometry(1000, 0, 1000);
 
@@ -36,10 +32,6 @@ scene.add(Floor);
 
 
 
-
-
-
-
 const loader = new THREE.ColladaLoader();
 
 loader.load("Objects/Car/LowPoly Muscle Cougar xr1970.dae", function (dae) {
@@ -48,6 +40,14 @@ loader.load("Objects/Car/LowPoly Muscle Cougar xr1970.dae", function (dae) {
   dae.scene.position.x = 20;
   dae.scene.position.y = 1;
   dae.scene.position.z = 20;
+
+  scene.add(dae.scene);
+});
+
+loader.load("Objects/Tree/Blender.dae", function (dae) {
+  dae.scene.scale.x = 0.5;
+  dae.scene.scale.y = 0.5;
+  dae.scene.scale.z = 0.5;
 
   scene.add(dae.scene);
 });
