@@ -4,10 +4,10 @@ const scene = new THREE.Scene();
 
 // Create camera
 const camera = new THREE.PerspectiveCamera(
-    75,     // fov - Camera frustum vertical field of view
-    window.innerWidth / window.innerHeight, // aspect - Camera frustum aspect ratio
-    0.1,   // near - Camera frustum near plane
-    6000); // far - Camera frustum far plane
+  75,     // fov - Camera frustum vertical field of view
+  window.innerWidth / window.innerHeight, // aspect - Camera frustum aspect ratio
+  0.1,   // near - Camera frustum near plane
+  6000); // far - Camera frustum far plane
 
 // Create renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -51,19 +51,15 @@ const material = new THREE.MeshPhongMaterial({ color: 0xddddcc, side: THREE.Doub
 //     scene.add(dae.scene);
 // });
 
-// const loader = new THREE.ColladaLoader();
-// loader.load("Objects/House/House.dae", function(dae) {
-//     scene.add(dae.scene);
-// });
-
-// const loader = new THREE.ColladaLoader();
-// loader.load("Objects/Car/Car.dae", function(dae) {
-//     scene.add(dae.scene);
-// });
-
 const loader = new THREE.ColladaLoader();
-loader.load("Objects/Car/LowPoly Muscle Cougar xr1970.dae", function(dae) {
-    scene.add(dae.scene);
+
+loader.load("Objects/House/House.dae", function (dae) {
+  scene.add(dae.scene);
+});
+
+
+loader.load("Objects/Car/LowPoly Muscle Cougar xr1970.dae", function (dae) {
+  scene.add(dae.scene);
 });
 
 // ------------------------------------------------------------
@@ -147,13 +143,13 @@ loader.load("Objects/Car/LowPoly Muscle Cougar xr1970.dae", function(dae) {
 // Define texture loader
 const textureLoader = new THREE.TextureLoader();
 
-const directions  = [
-    "Skybox/posx.jpg",
-    "Skybox/negx.jpg",
-    "Skybox/posy.jpg",
-    "Skybox/negy.jpg",
-    "Skybox/posz.jpg",
-    "Skybox/negz.jpg"
+const directions = [
+  "Skybox/posx.jpg",
+  "Skybox/negx.jpg",
+  "Skybox/posy.jpg",
+  "Skybox/negy.jpg",
+  "Skybox/posz.jpg",
+  "Skybox/negz.jpg"
 ];
 const materialArray = [];
 for (let i = 0; i < 6; i++) {
@@ -200,16 +196,16 @@ camera.position.y = 0;
 camera.position.z = 5;
 
 // Import camera control and rotation library
-const controls = new THREE.OrbitControls(camera, renderer.domElement); 
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.autoRotate = true;
 controls.autoRotateSpeed = 0;
 controls.noKeys = false;
 
-const render = function() {
-    requestAnimationFrame(render);
+const render = function () {
+  requestAnimationFrame(render);
 
-    controls.update();
-    renderer.render(scene, camera);
+  controls.update();
+  renderer.render(scene, camera);
 }
 
 render();
