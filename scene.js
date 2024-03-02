@@ -192,9 +192,9 @@ camera.position.x = 0;
 camera.position.y = 0;
 camera.position.z = 5;
 
-// Import camera control and rotation library
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.autoRotate = true;
+controls.listenToKeyEvents(window);
+controls.autoRotate = false;
 controls.autoRotateSpeed = 0;
 controls.noKeys = false;
 
