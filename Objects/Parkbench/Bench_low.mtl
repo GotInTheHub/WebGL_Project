@@ -1,0 +1,10 @@
+newmtl Bench_hard_low_OBJ:initialShadingGroup
+illum 4
+Kd 0.50 0.50 0.50
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+map_Bump Textures\\Bench_hard_low_OBJ_initialShadingGroup_Normal.png
+map_Kd Textures\\Bench_hard_low_OBJ_initialShadingGroup_BaseColor.png
+map_Ns Textures\\Bench_hard_low_OBJ_initialShadingGroup_Roughness.png
+refl Textures\\Bench_hard_low_OBJ_initialShadingGroup_Metallic.png
