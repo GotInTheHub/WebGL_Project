@@ -188,9 +188,9 @@ rimLight.position.set(-20, 80, -80);
 scene.add(rimLight);
 
 // Move camera from center
-camera.position.x = 0;
-camera.position.y = 0;
-camera.position.z = 5;
+camera.position.x = -2;
+camera.position.y = 2;
+camera.position.z = 12;
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.listenToKeyEvents(window);
