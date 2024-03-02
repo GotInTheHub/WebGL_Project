@@ -17,50 +17,47 @@ document.body.appendChild(renderer.domElement);
 // Define material
 const material = new THREE.MeshPhongMaterial({ color: 0xddddcc, side: THREE.DoubleSide });
 
-// ------------------------------------------------------------
-// GLTF (.glb)
-// ------------------------------------------------------------
-// const loader = new THREE.GLTFLoader();
-// loader.load("teapot.glb", function(gltf) {
-//     scene.add(gltf.scene);
-// });
-
-// ------------------------------------------------------------
-// GLTF (.glb) with own material
-// ------------------------------------------------------------
-// const loader = new THREE.GLTFLoader();
-// loader.load("teapot.glb", function(gltf) {
-//     gltf.scene.traverse( function ( child ) {
-//         if ( child.isMesh ) {
-//             child.material = material.clone();
-//         }
-//     } );
-//     scene.add(gltf.scene);
-// });
-
-// ------------------------------------------------------------
-// Collada (.dae)
-// ------------------------------------------------------------
-// const loader = new THREE.ColladaLoader();
-// loader.load("teapot.dae", function(dae) {
-//     scene.add(dae.scene);
-// });
 
 // const loader = new THREE.ColladaLoader();
 // loader.load("Objects/Tree/Blender.dae", function(dae) {
 //     scene.add(dae.scene);
 // });
 
+const Floorgeometry = new THREE.BoxGeometry(1000, 0, 1000);
+
+const texture = new THREE.TextureLoader().load("Textures/Road.jpeg");
+texture.wrapS = THREE.RepeatWrapping;
+texture.wrapT = THREE.RepeatWrapping;
+texture.repeat.set(100, 100);
+
+const Floormaterial = new THREE.MeshBasicMaterial({ map: texture });
+const Floor = new THREE.Mesh(Floorgeometry, Floormaterial);
+scene.add(Floor);
+
+
+
+
+
+
+
 const loader = new THREE.ColladaLoader();
+
+loader.load("Objects/Car/LowPoly Muscle Cougar xr1970.dae", function (dae) {
+  console.log(dae);
+
+  dae.scene.position.x = 20;
+  dae.scene.position.y = 1;
+  dae.scene.position.z = 20;
+
+  scene.add(dae.scene);
+});
+
 
 loader.load("Objects/House/House.dae", function (dae) {
   scene.add(dae.scene);
 });
 
 
-loader.load("Objects/Car/LowPoly Muscle Cougar xr1970.dae", function (dae) {
-  scene.add(dae.scene);
-});
 
 // ------------------------------------------------------------
 // Collada (.dae) with own material
