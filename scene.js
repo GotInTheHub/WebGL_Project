@@ -82,8 +82,8 @@ const ColladaLoader = new THREE.ColladaLoader();
 const ObjLoader = new THREE.OBJLoader();
 
 function LoadStreetLamp(mat) {
+  ObjLoader.setMaterials(mat);
   for (let i = 0; i < 3; i++) {
-    ObjLoader.setMaterials(mat);
     ObjLoader.load("./Objects/Streetlamp/Street_Lamp_7.obj", function (obj) {
       MoveObj(obj, ((i + 5) * 7) - 27.5, -5);
       ScaleObj(obj, 2);
