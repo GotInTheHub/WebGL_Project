@@ -74,7 +74,7 @@ const Floor = new THREE.Mesh(
   FloorMat
 )
 const Road = new THREE.Mesh(
-  new THREE.BoxGeometry(100, 0.1, 10),
+  new THREE.BoxGeometry(50, 0.1, 10),
   RoadMat
 )
 
@@ -82,20 +82,25 @@ const ColladaLoader = new THREE.ColladaLoader();
 const ObjLoader = new THREE.OBJLoader();
 
 function LoadStreetLamp(mat) {
-  ObjLoader.setMaterials(mat);
-  ObjLoader.load("./Objects/Streetlamp/Street_Lamp_7.obj", function (obj) {
-    MoveObj(obj, 20, 20);
-    AddToScene(obj);
-  });
+  for (let i = 0; i < 3; i++) {
+    ObjLoader.setMaterials(mat);
+    ObjLoader.load("./Objects/Streetlamp/Street_Lamp_7.obj", function (obj) {
+      MoveObj(obj, ((i + 5) * 7) - 27.5, -5);
+      ScaleObj(obj, 2);
+      AddToScene(obj);
+    });
+  }
 }
 
 function LoadParkbench(mat) {
   ObjLoader.setMaterials(mat);
-  ObjLoader.load("./Objects/Parkbench/bench_low.obj", function (obj) {
-    ScaleObj(obj, 0.01);
-    MoveObj(obj, 20, 20);
-    AddToScene(obj);
-  });
+  for (let i = 0; i < 3; i++) {
+    ObjLoader.load("./Objects/Parkbench/bench_low.obj", function (obj) {
+      ScaleObj(obj, 0.01);
+      MoveObj(obj, (i + 4) * 7 - 25, -5);
+      AddToScene(obj);
+    });
+  }
 }
 
 const Car = [];
@@ -112,6 +117,37 @@ for (let i = 0; i < 3; i++) {
 
 const skyGeometry = new THREE.BoxGeometry(5000, 5000, 5000);
 const skyBox = new THREE.Mesh(skyGeometry, skyMaterial);
+
+
+
+for (let i = 0; i < 2; i++) {
+  ColladaLoader.load("Objects/House/House.dae", function (dae) {
+    MoveObj(dae.scene, i * 16 - 15, -14)
+    AddToScene(dae.scene);
+  });
+}
+for (let i = 0; i < 2; i++) {
+  ColladaLoader.load("Objects/House/House.dae", function (dae) {
+    RotateObj(dae.scene, Math.PI);
+    MoveObj(dae.scene, i * 16 - 15, 14)
+    AddToScene(dae.scene);
+  });
+}
+
+
+
+// loader.load("Objects/Tree/Tree.dae", function (dae) {
+//   // dae.scene.scale.x = 0.5;
+//   // dae.scene.scale.y = 0.5;
+//   // dae.scene.scale.z = 0.5;
+// dae.scene.traverse( function ( child ) {
+//   if ( child.isMesh ) {
+//       child.material = material.clone();
+//   }
+// } );
+//   scene.add(dae.scene);
+// });
+
 
 //Modify objects ---------------------------------------------------------------------------------
 Floor.rotation.x = -Math.PI * 0.5;
@@ -141,11 +177,11 @@ var dir = [1, 1, 1];
 function MoveCarsToNewPlace() {
   if (Car.length > 0) {
     for (let i = 0; i < 3; i++) {
-      if (Car[i].position.x > 50) {
+      if (Car[i].position.x > 25) {
         RotateObj(Car[i], Car[i].rotation.z + Math.PI);
         dir[i] = -1;
       }
-      if (Car[i].position.x < -50) {
+      if (Car[i].position.x < -25) {
         RotateObj(Car[i], Car[i].rotation.z + Math.PI);
         dir[i] = 1;
       }
@@ -194,7 +230,7 @@ rimLight.position.set(-20, 80, -80);
 scene.add(rimLight);
 
 // Move camera from center ---------------------------------------------------------------------------------
-camera.position.x = 0;
+camera.position.x = -25;
 camera.position.y = 3;
 camera.position.z = 0;
 
