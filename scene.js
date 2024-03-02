@@ -1,112 +1,126 @@
 
-// Create scene
+// Create scene ---------------------------------------------------------------------------------
 const scene = new THREE.Scene();
 
-// Create camera
+// Create camera ---------------------------------------------------------------------------------
 const camera = new THREE.PerspectiveCamera(
   75,     // fov - Camera frustum vertical field of view
   window.innerWidth / window.innerHeight, // aspect - Camera frustum aspect ratio
   0.1,   // near - Camera frustum near plane
   6000); // far - Camera frustum far plane
 
-// Create renderer
+// Create renderer ---------------------------------------------------------------------------------
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Define material
-const material = new THREE.MeshPhongMaterial({ color: 0xddddcc, side: THREE.DoubleSide });
-const Floorgeometry = new THREE.PlaneGeometry(1000, 1000);
 
-const texture = new THREE.TextureLoader().load("Textures/Road.jpeg");
-texture.wrapS = THREE.RepeatWrapping;
-texture.wrapT = THREE.RepeatWrapping;
-texture.repeat.set(100, 100);
-const Floormaterial = new THREE.MeshBasicMaterial({ map: texture });
+//Define Textures ---------------------------------------------------------------------------------
+const textureLoader = new THREE.TextureLoader();
 
+const textureGrass = textureLoader.load("Textures/Grass.png");
+textureGrass.wrapS = THREE.RepeatWrapping;
+textureGrass.wrapT = THREE.RepeatWrapping;
+textureGrass.repeat.set(100, 100);
+
+
+// Define material ---------------------------------------------------------------------------------
+const FloorMat = new THREE.MeshBasicMaterial({ map: textureGrass });
+const mtl_loader = new THREE.MTLLoader();
+
+mtl_loader.load("./Objects/Streetlamp/Street_Lamp_7.mtl", function (mat) {
+  mat.preload();
+  LoadStreetLamp(mat);
+});
+
+mtl_loader.load("./Objects/Parkbench/bench_low.mtl", function (mat) {
+  mat.preload();
+  LoadParkbench(mat);
+});
+
+//const material = new THREE.MeshPhongMaterial({ color: 0xddddcc, side: THREE.DoubleSide });
+
+
+// Define objects ---------------------------------------------------------------------------------
 const Floor = new THREE.Mesh(
   new THREE.PlaneGeometry(1000, 1000),
-  Floormaterial
+  FloorMat
 )
-Floor.receiveShadow = true;
+
+const ColladaLoader = new THREE.ColladaLoader();
+const ObjLoader = new THREE.OBJLoader();
+
+function LoadStreetLamp(mat) {
+  ObjLoader.setMaterials(mat);
+  ObjLoader.load("./Objects/Streetlamp/Street_Lamp_7.obj", function (obj) {
+    MoveObj(obj, 20, 20);
+    AddToScene(obj);
+  });
+}
+
+function LoadParkbench(mat) {
+  ObjLoader.setMaterials(mat);
+  ObjLoader.load("./Objects/Parkbench/bench_low.obj", function (obj) {
+    ScaleObj(obj, 0.01);
+    MoveObj(obj, 20, 20);
+    AddToScene(obj);
+  });
+}
+
+ColladaLoader.load("Objects/Car/LowPoly Muscle Cougar xr1970.dae", function (dae) {
+  MoveObj(dae.scene, 25, 20);
+  MoveUp(dae.scene);
+  AddToScene(dae.scene);
+});
+
+
+ColladaLoader.load("Objects/House/House.dae", function (dae) {
+  AddToScene(dae.scene);
+});
+
+
+// loader.load("Objects/Tree/Tree.dae", function (dae) {
+//   // dae.scene.scale.x = 0.5;
+//   // dae.scene.scale.y = 0.5;
+//   // dae.scene.scale.z = 0.5;
+// dae.scene.traverse( function ( child ) {
+//   if ( child.isMesh ) {
+//       child.material = material.clone();
+//   }
+// } );
+//   scene.add(dae.scene);
+// });
+
+
+//Modify objects ---------------------------------------------------------------------------------
 Floor.rotation.x = -Math.PI * 0.5;
+
+function MoveObj(scene, x, z) {
+  scene.position.x = x;
+  scene.position.y = 0;
+  scene.position.z = z;
+}
+function MoveUp(scene) {
+  scene.position.y += 1;
+}
+function ScaleObj(scene, factor) {
+  scene.scale.x = factor;
+  scene.scale.y = factor;
+  scene.scale.z = factor;
+}
+
+//Add objects to scene ---------------------------------------------------------------------------------
 scene.add(Floor);
-
-const loader = new THREE.ColladaLoader();
-
-loader.load("Objects/Car/LowPoly Muscle Cougar xr1970.dae", function (dae) {
-  console.log(dae);
-
-  dae.scene.position.x = 20;
-  dae.scene.position.y = 1;
-  dae.scene.position.z = 20;
-
-  scene.add(dae.scene);
-});
-
-loader.load("Objects/Tree/Blender.dae", function (dae) {
-  dae.scene.scale.x = 0.5;
-  dae.scene.scale.y = 0.5;
-  dae.scene.scale.z = 0.5;
-
-  scene.add(dae.scene);
-});
-
-
-loader.load("Objects/House/House.dae", function (dae) {
-  scene.add(dae.scene);
-});
-
-// const loader = new THREE.ColladaLoader();
-// loader.load("Objects/Tree/Blender.dae", function(dae) {
-//     scene.add(dae.scene);
-// });
-
-// ------------------------------------------------------------
-// Collada (.dae) with own material
-// ------------------------------------------------------------
-// const loader = new THREE.ColladaLoader();
-// loader.load("Objects/Tree/Tree.dae", function(dae) {
-//     dae.scene.traverse( function ( child ) {
-//         if ( child.isMesh ) {
-//             child.material = material.clone();
-//         }
-//     } );
-//     scene.add(dae.scene);
-// });
-
-// const loader = new THREE.ColladaLoader();
-// loader.load("Objects/House/House.dae", function(dae) {
-//     dae.scene.traverse( function ( child ) {
-//         if ( child.isMesh ) {
-//             child.material = material.clone();
-//         }
-//     } );
-//     scene.add(dae.scene);
-// });
+function AddToScene(SceneObj) {
+  scene.add(SceneObj)
+}
 
 // ------------------------------------------------------------
 // Wavefront (.obj + .mtl)
 // ------------------------------------------------------------
-// const mtl_loader = new THREE.MTLLoader();
-// mtl_loader.load("./Objects/Streetlamp/Street_Lamp_7.mtl", function(mat) {
-//     mat.preload();
-//     const loader = new THREE.OBJLoader();
-//     loader.setMaterials(mat);
-//     loader.load("./Objects/Streetlamp/Street_Lamp_7.obj", function(obj) {
-//         scene.add(obj);
-//     });
-// });
 
-// const mtl_loader = new THREE.MTLLoader();
-// mtl_loader.load("./Objects/Parkbench/bench_low.mtl", function(mat) {
-//     mat.preload();
-//     const loader = new THREE.OBJLoader();
-//     loader.setMaterials(mat);
-//     loader.load("./Objects/Parkbench/bench_low.obj", function(obj) {
-//         scene.add(obj);
-//     });
-// });
+
+
 
 // ------------------------------------------------------------
 // Wavefront (.obj) with own material
@@ -121,7 +135,6 @@ loader.load("Objects/House/House.dae", function (dae) {
 //     scene.add(obj);
 // });
 // Define texture loader
-const textureLoader = new THREE.TextureLoader();
 
 const directions = [
   "Skybox/posx.jpg",
@@ -185,7 +198,6 @@ const render = function () {
   requestAnimationFrame(render);
 
   controls.update();
-  Tick();
   renderer.render(scene, camera);
 }
 
