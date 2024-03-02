@@ -23,9 +23,17 @@ textureGrass.wrapS = THREE.RepeatWrapping;
 textureGrass.wrapT = THREE.RepeatWrapping;
 textureGrass.repeat.set(100, 100);
 
+const textureRoad = textureLoader.load("Textures/Road.jpeg");
+textureRoad.wrapS = THREE.RepeatWrapping;
+textureRoad.wrapT = THREE.RepeatWrapping;
+textureRoad.repeat.set(30, 3);
+
+
 
 // Define material ---------------------------------------------------------------------------------
 const FloorMat = new THREE.MeshBasicMaterial({ map: textureGrass });
+const RoadMat = new THREE.MeshBasicMaterial({ map: textureRoad });
+
 const mtl_loader = new THREE.MTLLoader();
 
 mtl_loader.load("./Objects/Streetlamp/Street_Lamp_7.mtl", function (mat) {
@@ -38,13 +46,36 @@ mtl_loader.load("./Objects/Parkbench/bench_low.mtl", function (mat) {
   LoadParkbench(mat);
 });
 
-//const material = new THREE.MeshPhongMaterial({ color: 0xddddcc, side: THREE.DoubleSide });
 
+const directions = [
+  "Skybox/posx.jpg",
+  "Skybox/negx.jpg",
+  "Skybox/posy.jpg",
+  "Skybox/negy.jpg",
+  "Skybox/posz.jpg",
+  "Skybox/negz.jpg"
+];
+
+const materialArray = [];
+for (let i = 0; i < 6; i++) {
+  materialArray.push(
+    new THREE.MeshBasicMaterial({
+      map: THREE.ImageUtils.loadTexture(directions[i]),
+      side: THREE.BackSide,
+    })
+  );
+}
+
+const skyMaterial = new THREE.MeshFaceMaterial(materialArray);
 
 // Define objects ---------------------------------------------------------------------------------
 const Floor = new THREE.Mesh(
   new THREE.PlaneGeometry(1000, 1000),
   FloorMat
+)
+const Road = new THREE.Mesh(
+  new THREE.BoxGeometry(100, 0.1, 10),
+  RoadMat
 )
 
 const ColladaLoader = new THREE.ColladaLoader();
@@ -67,98 +98,77 @@ function LoadParkbench(mat) {
   });
 }
 
-ColladaLoader.load("Objects/Car/LowPoly Muscle Cougar xr1970.dae", function (dae) {
-  MoveObj(dae.scene, 25, 20);
-  MoveUp(dae.scene);
-  AddToScene(dae.scene);
-});
+const Car = [];
+for (let i = 0; i < 3; i++) {
+  ColladaLoader.load("Objects/Car/LowPoly Muscle Cougar xr1970.dae", function (dae) {
+    Car[i] = dae.scene;
+    MoveObj(Car[i], i * 10, -10 + i * 10);
+    RotateObj(Car[i], Math.PI * 0.5)
+    MoveUp(Car[i]);
+    AddToScene(Car[i]);
+  });
+}
 
 
-ColladaLoader.load("Objects/House/House.dae", function (dae) {
-  AddToScene(dae.scene);
-});
-
-
-// loader.load("Objects/Tree/Tree.dae", function (dae) {
-//   // dae.scene.scale.x = 0.5;
-//   // dae.scene.scale.y = 0.5;
-//   // dae.scene.scale.z = 0.5;
-// dae.scene.traverse( function ( child ) {
-//   if ( child.isMesh ) {
-//       child.material = material.clone();
-//   }
-// } );
-//   scene.add(dae.scene);
-// });
-
+const skyGeometry = new THREE.BoxGeometry(5000, 5000, 5000);
+const skyBox = new THREE.Mesh(skyGeometry, skyMaterial);
 
 //Modify objects ---------------------------------------------------------------------------------
 Floor.rotation.x = -Math.PI * 0.5;
+
+function RotateObj(scene, angle) {
+  scene.rotation.z = angle;
+}
+
 
 function MoveObj(scene, x, z) {
   scene.position.x = x;
   scene.position.y = 0;
   scene.position.z = z;
 }
+
 function MoveUp(scene) {
   scene.position.y += 1;
 }
+
 function ScaleObj(scene, factor) {
   scene.scale.x = factor;
   scene.scale.y = factor;
   scene.scale.z = factor;
 }
 
+var dir = [1, 1, 1];
+function MoveCarsToNewPlace() {
+  if (Car.length > 0) {
+    for (let i = 0; i < 3; i++) {
+      if (Car[i].position.x > 50) {
+        RotateObj(Car[i], Car[i].rotation.z + Math.PI);
+        dir[i] = -1;
+      }
+      if (Car[i].position.x < -50) {
+        RotateObj(Car[i], Car[i].rotation.z + Math.PI);
+        dir[i] = 1;
+      }
+      MoveObj(Car[i], Car[i].position.x + dir[i] * 0.3, -3 + i * 3);
+      MoveUp(Car[i]);
+    };
+  }
+}
+
 //Add objects to scene ---------------------------------------------------------------------------------
 scene.add(Floor);
+scene.add(Road);
+
 function AddToScene(SceneObj) {
   scene.add(SceneObj)
 }
 
-// ------------------------------------------------------------
-// Wavefront (.obj + .mtl)
-// ------------------------------------------------------------
-
-
-
-
-// ------------------------------------------------------------
-// Wavefront (.obj) with own material
-// ------------------------------------------------------------
-// const loader = new THREE.OBJLoader();
-// loader.load("Street_Lamp_7.obj", function(obj) {
-//     obj.traverse( function ( child ) {
-//         if ( child.isMesh ) {
-//             child.material = material.clone();
-//         }
-//     } );
-//     scene.add(obj);
-// });
-// Define texture loader
-
-const directions = [
-  "Skybox/posx.jpg",
-  "Skybox/negx.jpg",
-  "Skybox/posy.jpg",
-  "Skybox/negy.jpg",
-  "Skybox/posz.jpg",
-  "Skybox/negz.jpg"
-];
-const materialArray = [];
-for (let i = 0; i < 6; i++) {
-  materialArray.push(
-    new THREE.MeshBasicMaterial({
-      map: THREE.ImageUtils.loadTexture(directions[i]),
-      side: THREE.BackSide,
-    })
-  );
-}
-const skyGeometry = new THREE.BoxGeometry(5000, 5000, 5000);
-const skyMaterial = new THREE.MeshFaceMaterial(materialArray);
-const skyBox = new THREE.Mesh(skyGeometry, skyMaterial);
 scene.add(skyBox);
 
-// Define light
+
+
+
+// Define light ---------------------------------------------------------------------------------
 const ambient = new THREE.AmbientLight(0x404040);
 scene.add(ambient);
 
@@ -183,22 +193,33 @@ rimLight = new THREE.DirectionalLight(0xdddddd, .6);
 rimLight.position.set(-20, 80, -80);
 scene.add(rimLight);
 
-// Move camera from center
-camera.position.x = -2;
-camera.position.y = 2;
-camera.position.z = 12;
+// Move camera from center ---------------------------------------------------------------------------------
+camera.position.x = 0;
+camera.position.y = 3;
+camera.position.z = 0;
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.listenToKeyEvents(window);
 controls.autoRotate = false;
 controls.autoRotateSpeed = 0;
 controls.noKeys = false;
+controls.target.set(10, 3, 0);
 
+
+// render ---------------------------------------------------------------------------------
+const clock = new THREE.Clock();
 const render = function () {
   requestAnimationFrame(render);
-
   controls.update();
+
+  MoveCarsToNewPlace();
+
   renderer.render(scene, camera);
 }
 
 render();
+
+
+
+
+
