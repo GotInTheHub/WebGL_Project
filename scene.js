@@ -70,11 +70,12 @@ function init() {
   createSkybox(scene);
 
   // Objects
-  loadHouses();
+  // loadHouses();
   loadCars();
-  loadTrees();
+  // loadTrees();
   loadStreetLamp();
   loadParkbench();
+  TorusKnot(scene);
 }
 
 function animate() {
@@ -125,12 +126,7 @@ function createGrass(scene) {
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(100, 100);
-  const Material = new THREE.MeshStandardMaterial(
-    {
-      map: texture,
-      roughness: 0.0,
-    }
-  );
+  const Material = new THREE.MeshStandardMaterial({map: texture});
   const Geometry = new THREE.PlaneGeometry(1000, 1000);
   //Create the Object
   const grass = new THREE.Mesh(Geometry, Material);
@@ -139,6 +135,15 @@ function createGrass(scene) {
   //Add The object to the scene
   scene.add(grass);
 }
+
+function TorusKnot(scene) {
+  const geometry = new THREE.TorusKnotGeometry(1, 0.4, 100, 16);
+  const material = new THREE.MeshStandardMaterial({ color: 0x00ff00, roughness: 1 });
+  const torusKnot = new THREE.Mesh(geometry, material);
+  torusKnot.position.set(0, 10, 0);
+  scene.add(torusKnot);
+}
+
 
 function createRoad(scene) {
   //Create Grass Texture
