@@ -49,17 +49,7 @@ function init() {
   container.appendChild(stats.domElement);
 
   // Lighting
-  //Create a DirectionalLight and turn on shadows for the light
-  var light = new THREE.DirectionalLight(0xffffff, 1);
 
-  light.position.set(0, 1, 0);
-  light.castShadow = true; // default false
-  light.shadow.mapSize.width = 512; // default
-  light.shadow.mapSize.height = 512; // default
-  light.shadow.camera.near = 0.5; // default
-  light.shadow.camera.far = 500; // default
-
-  scene.add(light);
 
   addLighting(scene);
 
@@ -117,6 +107,17 @@ function addLighting(scene) {
   rimLight = new THREE.DirectionalLight(0xdddddd, .6);
   rimLight.position.set(-20, 80, -80);
   scene.add(rimLight);
+
+
+  //Create a Directiona lLight and turn on shadows for the light
+  var light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(0, 1, 0);
+  light.castShadow = true; // default false
+  light.shadow.mapSize.width = 512; // default
+  light.shadow.mapSize.height = 512; // default
+  light.shadow.camera.near = 0.5; // default
+  light.shadow.camera.far = 500; // default
+  scene.add(light);
 }
 
 function createGrass(scene) {
@@ -132,6 +133,7 @@ function createGrass(scene) {
       roughness: 0.0,
     }
   );
+  //Material.transparent = true;
   const Geometry = new THREE.PlaneGeometry(1000, 1000);
   //Create the Object
   const grass = new THREE.Mesh(Geometry, Material);
