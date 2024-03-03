@@ -606,45 +606,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 				pan( - scope.keyPanSpeed, 0 );
 				needsUpdate = true;
 				break;
-			
-			// Expansion for WASDQE keys
-			case "KeyW":
-				//zoom in
-				dollyIn( getZoomScale() );
-				needsUpdate = true;
-				break;
-			
-			case "KeyS":
-				//zoom out
-				dollyOut( getZoomScale() );
-				needsUpdate = true;
-				break;
-			
-			case "KeyA":
-				// pan left
-				pan( scope.keyPanSpeed, 0 );
-				needsUpdate = true;
-				break;
-
-			case "KeyD":
-				// pan right
-				pan( - scope.keyPanSpeed, 0 );
-				needsUpdate = true;
-				break;
-			
-			case "KeyQ":
-				// rotate left
-				scope.enableDamping == false ? scope.enableDamping = true : scope.enableDamping = false;
-				rotateLeft( Math.PI * scope.rotateSpeed * scope.dampingFactor );
-				needsUpdate = true;
-				break;
-
-			case "KeyE":
-				// rotate right
-				scope.enableDamping == false ? scope.enableDamping = true : scope.enableDamping = false;
-				rotateLeft( -Math.PI * scope.rotateSpeed * scope.dampingFactor );
-				needsUpdate = true;
-				break;
 		}
 
 		if ( needsUpdate ) {
