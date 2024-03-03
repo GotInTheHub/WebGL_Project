@@ -1,8 +1,7 @@
 // Global variables
-var renderer, scene, camera, container, controls, stats, pivot;
+var renderer, scene, camera, container, controls, stats;
 const ColladaLoader = new THREE.ColladaLoader();
 var keyboard = new THREEx.KeyboardState();
-var clock = new THREE.Clock();
 const Car = [];
 
 init();
@@ -13,16 +12,15 @@ function init() {
   scene = new THREE.Scene();
 
   // Create camera
-  var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+  var SCREEN_WIDTH = window.innerWidth,
+    SCREEN_HEIGHT = window.innerHeight;
   CreateCamera(scene, SCREEN_WIDTH, SCREEN_HEIGHT);
 
   // Create renderer
-  if (Detector.webgl)
-    renderer = new THREE.WebGLRenderer({ antialias: true })
-  else
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  if (Detector.webgl) renderer = new THREE.WebGLRenderer({ antialias: true });
+  else renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-  container = document.getElementById('ThreeJS');
+  container = document.getElementById("ThreeJS");
   container.appendChild(renderer.domElement);
 
   // Create ShadowMap
@@ -31,7 +29,7 @@ function init() {
 
   // Events
   THREEx.WindowResize(renderer, camera);
-  THREEx.FullScreen.bindKey({ charCode: 'm'.charCodeAt(0) });
+  THREEx.FullScreen.bindKey({ charCode: "m".charCodeAt(0) });
 
   // Controls
   controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -43,24 +41,22 @@ function init() {
 
   // Stats
   stats = new Stats();
-  stats.domElement.style.position = 'absolute';
-  stats.domElement.style.bottom = '0px';
+  stats.domElement.style.position = "absolute";
+  stats.domElement.style.bottom = "0px";
   stats.domElement.style.zIndex = 100;
   container.appendChild(stats.domElement);
 
   // Lighting
   //Create a DirectionalLight and turn on shadows for the light
-  var light = new THREE.DirectionalLight(0xffffff, 1);
+  var light = new THREE.DirectionalLight(0xffffff);
 
-  light.position.set(0, 1, 0);
+  light.position.set(0, 255, 0);
   light.castShadow = true; // default false
   light.shadow.mapSize.width = 512; // default
   light.shadow.mapSize.height = 512; // default
   light.shadow.camera.near = 0.5; // default
   light.shadow.camera.far = 500; // default
-
   scene.add(light);
-
   addLighting(scene);
 
   // Floor
@@ -71,12 +67,12 @@ function init() {
   createSkybox(scene);
 
   // Objects
-  // loadHouses();
+  loadHouses();
   loadCars();
-  // loadTrees();
+  loadTrees();
   loadStreetLamp();
   loadParkbench();
-  TorusKnot(scene);
+  loadArtPiece(scene);
 }
 
 function animate() {
@@ -87,11 +83,14 @@ function animate() {
 }
 
 function CreateCamera(scene, SCREEN_WIDTH, SCREEN_HEIGHT) {
-  var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+  var VIEW_ANGLE = 45,
+    ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT,
+    NEAR = 0.1,
+    FAR = 20000;
   camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
   scene.add(camera);
 
-  // Move camera from center ---------------------------------------------------------------------------------
+  // Move camera from center
   positionCamera(camera, -25, 3, 0);
 }
 
@@ -105,17 +104,17 @@ function addLighting(scene) {
   scene.add(ambient);
 
   // Directional - KEY LIGHT
-  keyLight = new THREE.DirectionalLight(0xdddddd, .7);
+  keyLight = new THREE.DirectionalLight(0xdddddd, 0.7);
   keyLight.position.set(-80, 60, 80);
   scene.add(keyLight);
 
   // Directional - FILL LIGHT
-  fillLight = new THREE.DirectionalLight(0xdddddd, .3);
+  fillLight = new THREE.DirectionalLight(0xdddddd, 0.3);
   fillLight.position.set(80, 40, 40);
   scene.add(fillLight);
 
   // Directional - RIM LIGHT
-  rimLight = new THREE.DirectionalLight(0xdddddd, .6);
+  rimLight = new THREE.DirectionalLight(0xdddddd, 0.6);
   rimLight.position.set(-20, 80, -80);
   scene.add(rimLight);
 }
@@ -127,7 +126,12 @@ function createGrass(scene) {
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(100, 100);
-  const Material = new THREE.MeshStandardMaterial({map: texture});
+  const Material = new THREE.MeshStandardMaterial({
+    map: texture,
+    roughness: 1,
+    metalness: 0,
+    side: THREE.DoubleSide,
+  });
   const Geometry = new THREE.PlaneGeometry(1000, 1000);
   //Create the Object
   const grass = new THREE.Mesh(Geometry, Material);
@@ -137,14 +141,20 @@ function createGrass(scene) {
   scene.add(grass);
 }
 
-function TorusKnot(scene) {
+function loadArtPiece(scene) {
   const geometry = new THREE.TorusKnotGeometry(1, 0.4, 100, 16);
-  const material = new THREE.MeshStandardMaterial({ color: 0x00ff00, roughness: 1 });
+  const material = new THREE.MeshStandardMaterial({
+    color: 0x00ff00,
+    roughness: 0,
+    metalness: 1,
+  });
+  material.wireframe = true;
   const torusKnot = new THREE.Mesh(geometry, material);
-  torusKnot.position.set(0, 10, 0);
+  torusKnot.position.set(18, 1.65, 10);
+  torusKnot.castShadow = true;
+  torusKnot.rotation.z = Math.PI * 0.5;
   scene.add(torusKnot);
 }
-
 
 function createRoad(scene) {
   //Create Grass Texture
@@ -153,7 +163,12 @@ function createRoad(scene) {
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(30, 3);
-  const Material = new THREE.MeshBasicMaterial({ map: texture });
+  const Material = new THREE.MeshBasicMaterial({
+    map: texture,
+    side: THREE.DoubleSide,
+    roughness: 1,
+    metalness: 0,
+  });
   //Create the Object
   const Geometry = new THREE.BoxGeometry(50, 0.1, 10);
   const road = new THREE.Mesh(Geometry, Material);
@@ -169,14 +184,14 @@ function createSkybox(scene) {
     "Skybox/posy.jpg",
     "Skybox/negy.jpg",
     "Skybox/posz.jpg",
-    "Skybox/negz.jpg"
+    "Skybox/negz.jpg",
   ];
   const materialArray = [];
   for (let i = 0; i < 6; i++) {
     materialArray.push(
       new THREE.MeshBasicMaterial({
         map: THREE.ImageUtils.loadTexture(directions[i]),
-        side: THREE.BackSide
+        side: THREE.BackSide,
       })
     );
   }
@@ -192,61 +207,85 @@ function update() {
 
   const euler = new THREE.Euler(0, 0, 0, "YXZ");
   euler.setFromQuaternion(camera.quaternion);
-  const cameraRotationY = camera.rotation.y;
   // retrive the value of the rotation on the y axis in degrees within 0 - 360
-  const cameraRotationYDegrees = (THREE.MathUtils.radToDeg(euler.y) + 360) % 360;
+  const cameraRotationYDegrees =
+    (THREE.MathUtils.radToDeg(euler.y) + 360) % 360;
 
+  // Move the camera to the direction it is facing
   if (keyboard.pressed("W")) {
-    if (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90 || cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360) {
+    if (
+      (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90) ||
+      (cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360)
+    ) {
       controls.target.x -= Math.sin(camera.rotation.y) * moveSpeed;
       controls.target.z -= Math.cos(camera.rotation.y) * moveSpeed;
-      controls.target.y += Math.sin(Math.min(camera.rotation.x - camera.rotation.z)) * moveSpeed;
+      controls.target.y +=
+        Math.sin(Math.min(camera.rotation.x - camera.rotation.z)) * moveSpeed;
 
       camera.position.x -= Math.sin(camera.rotation.y) * moveSpeed;
       camera.position.z -= Math.cos(camera.rotation.y) * moveSpeed;
-      camera.position.y += Math.sin(Math.min(camera.rotation.x - camera.rotation.z)) * moveSpeed;
-    }
-    else if (cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180 || cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270) {
+      camera.position.y +=
+        Math.sin(Math.min(camera.rotation.x - camera.rotation.z)) * moveSpeed;
+    } else if (
+      (cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180) ||
+      (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270)
+    ) {
       controls.target.x -= Math.sin(camera.rotation.y) * moveSpeed;
       controls.target.z += Math.cos(camera.rotation.y) * moveSpeed;
-      controls.target.y -= Math.sin(Math.min(camera.rotation.x + camera.rotation.z)) * moveSpeed;
+      controls.target.y -=
+        Math.sin(Math.min(camera.rotation.x + camera.rotation.z)) * moveSpeed;
 
       camera.position.x -= Math.sin(camera.rotation.y) * moveSpeed;
       camera.position.z += Math.cos(camera.rotation.y) * moveSpeed;
-      camera.position.y -= Math.sin(Math.min(camera.rotation.x + camera.rotation.z)) * moveSpeed;
+      camera.position.y -=
+        Math.sin(Math.min(camera.rotation.x + camera.rotation.z)) * moveSpeed;
     }
   }
 
   if (keyboard.pressed("S")) {
-    if (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90 || cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360) {
+    if (
+      (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90) ||
+      (cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360)
+    ) {
       controls.target.x += Math.sin(camera.rotation.y) * moveSpeed;
       controls.target.z += Math.cos(camera.rotation.y) * moveSpeed;
-      controls.target.y -= Math.sin(Math.min(camera.rotation.x - camera.rotation.z)) * moveSpeed;
+      controls.target.y -=
+        Math.sin(Math.min(camera.rotation.x - camera.rotation.z)) * moveSpeed;
 
       camera.position.x += Math.sin(camera.rotation.y) * moveSpeed;
       camera.position.z += Math.cos(camera.rotation.y) * moveSpeed;
-      camera.position.y -= Math.sin(Math.min(camera.rotation.x - camera.rotation.z)) * moveSpeed;
-    }
-    else if (cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180 || cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270) {
+      camera.position.y -=
+        Math.sin(Math.min(camera.rotation.x - camera.rotation.z)) * moveSpeed;
+    } else if (
+      (cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180) ||
+      (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270)
+    ) {
       controls.target.x += Math.sin(camera.rotation.y) * moveSpeed;
       controls.target.z -= Math.cos(camera.rotation.y) * moveSpeed;
-      controls.target.y += Math.sin(Math.min(camera.rotation.x + camera.rotation.z)) * moveSpeed;
+      controls.target.y +=
+        Math.sin(Math.min(camera.rotation.x + camera.rotation.z)) * moveSpeed;
 
       camera.position.x += Math.sin(camera.rotation.y) * moveSpeed;
       camera.position.z -= Math.cos(camera.rotation.y) * moveSpeed;
-      camera.position.y += Math.sin(Math.min(camera.rotation.x + camera.rotation.z)) * moveSpeed;
+      camera.position.y +=
+        Math.sin(Math.min(camera.rotation.x + camera.rotation.z)) * moveSpeed;
     }
   }
 
   if (keyboard.pressed("D")) {
-    if (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90 || cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360) {
+    if (
+      (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90) ||
+      (cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360)
+    ) {
       controls.target.x += Math.cos(camera.rotation.y) * moveSpeed;
       controls.target.z -= Math.sin(camera.rotation.y) * moveSpeed;
 
       camera.position.x += Math.cos(camera.rotation.y) * moveSpeed;
       camera.position.z -= Math.sin(camera.rotation.y) * moveSpeed;
-    }
-    else if (cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180 || cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270) {
+    } else if (
+      (cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180) ||
+      (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270)
+    ) {
       controls.target.x -= Math.cos(camera.rotation.y) * moveSpeed;
       controls.target.z -= Math.sin(camera.rotation.y) * moveSpeed;
 
@@ -256,14 +295,19 @@ function update() {
   }
 
   if (keyboard.pressed("A")) {
-    if (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90 || cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360) {
+    if (
+      (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90) ||
+      (cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360)
+    ) {
       controls.target.x -= Math.cos(camera.rotation.y) * moveSpeed;
       controls.target.z += Math.sin(camera.rotation.y) * moveSpeed;
 
       camera.position.x -= Math.cos(camera.rotation.y) * moveSpeed;
       camera.position.z += Math.sin(camera.rotation.y) * moveSpeed;
-    }
-    else if (cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180 || cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270) {
+    } else if (
+      (cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180) ||
+      (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270)
+    ) {
       controls.target.x += Math.cos(camera.rotation.y) * moveSpeed;
       controls.target.z += Math.sin(camera.rotation.y) * moveSpeed;
 
@@ -272,20 +316,18 @@ function update() {
     }
   }
 
+  // rotate the camera
   if (keyboard.pressed("Q")) {
     camera.translateOnAxis(new THREE.Vector3(1, 0, 0), rotationSpeed);
-    console.log(cameraRotationY);
   }
 
   if (keyboard.pressed("E")) {
     camera.translateOnAxis(new THREE.Vector3(-1, 0, 0), rotationSpeed);
-    console.log(cameraRotationY);
   }
 
   controls.update();
   stats.update();
 }
-
 
 function render() {
   renderer.render(scene, camera);
@@ -296,44 +338,41 @@ function loadHouses() {
 
   for (let i = 0; i < 2; i++) {
     ColladaLoader.load("Objects/House/House.dae", function (dae) {
-      MoveObj(dae.scene, i * 16 - 15, -14)
+      MoveObj(dae.scene, i * 16 - 15, -14);
       scene.add(dae.scene);
     });
   }
   for (let i = 0; i < 2; i++) {
     ColladaLoader.load("Objects/House/House.dae", function (dae) {
       RotateObj(dae.scene, Math.PI);
-      MoveObj(dae.scene, i * 16 - 15, 14)
+      MoveObj(dae.scene, i * 16 - 15, 14);
       scene.add(dae.scene);
     });
   }
 }
 
 function loadTrees() {
-
-  // loader.load("Objects/Tree/Tree.dae", function (dae) {
-  //   // dae.scene.scale.x = 0.5;
-  //   // dae.scene.scale.y = 0.5;
-  //   // dae.scene.scale.z = 0.5;
-  // dae.scene.traverse( function ( child ) {
-  //   if ( child.isMesh ) {
-  //       child.material = material.clone();
-  //   }
-  // } );
-  //   scene.add(dae.scene);
-  // });
-
+  ColladaLoader.load("Objects/Tree/Tree.dae", function (dae) {
+    dae.scene.scale.x = 0.5;
+    dae.scene.scale.y = 0.5;
+    dae.scene.scale.z = 0.5;
+    MoveObj(dae.scene, 26, 0);
+    scene.add(dae.scene);
+  });
 }
 
 function loadCars() {
   for (let i = 0; i < 3; i++) {
-    ColladaLoader.load("Objects/Car/LowPoly Muscle Cougar xr1970.dae", function (dae) {
-      Car[i] = dae.scene;
-      MoveObj(Car[i], i * 10, -10 + i * 10);
-      RotateObj(Car[i], Math.PI * 0.5)
-      MoveUp(Car[i]);
-      scene.add(Car[i]);
-    });
+    ColladaLoader.load(
+      "Objects/Car/LowPoly Muscle Cougar xr1970.dae",
+      function (dae) {
+        Car[i] = dae.scene;
+        MoveObj(Car[i], i * 10, -10 + i * 10);
+        RotateObj(Car[i], Math.PI * 0.5);
+        MoveUp(Car[i]);
+        scene.add(Car[i]);
+      }
+    );
   }
 }
 
@@ -347,10 +386,8 @@ function loadStreetLamp() {
     objLoader.setMaterials(mat);
     for (let i = 0; i < 3; i++) {
       objLoader.load("./Objects/Streetlamp/Street_Lamp_7.obj", function (obj) {
-        MoveObj(obj, ((i + 5) * 7) - 27.5, -5);
+        MoveObj(obj, (i + 5) * 7 - 27.5, -5);
         ScaleObj(obj, 2);
-        obj.castShadow = true; //default is false
-        obj.receiveShadow = false; //default
         scene.add(obj);
       });
     }
@@ -369,8 +406,6 @@ function loadParkbench() {
       objLoader.load("./Objects/Parkbench/bench_low.obj", function (obj) {
         ScaleObj(obj, 0.01);
         MoveObj(obj, (i + 4) * 7 - 25, -5);
-        obj.castShadow = true; //default is false
-        obj.receiveShadow = false; //default
         scene.add(obj);
       });
     }
@@ -412,7 +447,7 @@ function MoveCarsToNewPlace() {
         }
         MoveObj(Car[i], Car[i].position.x + dir[i] * 0.3, -3 + i * 3);
         MoveUp(Car[i]);
-      };
+      }
     }
   }
 }
