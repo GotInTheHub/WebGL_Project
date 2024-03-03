@@ -1,15 +1,16 @@
 // Global variables
 var renderer, scene, camera, container, controls, stats, pivot;
+const textureLoader = new THREE.TextureLoader();
+const ColladaLoader = new THREE.ColladaLoader();
+const ObjLoader = new THREE.OBJLoader();
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
-
-var directionList = [];
+const Car = [];
 
 init();
 animate();
 
-
-function init(){
+function init() {
   // Create scene
   scene = new THREE.Scene();
 
@@ -18,8 +19,8 @@ function init(){
   CreateCamera(scene, SCREEN_WIDTH, SCREEN_HEIGHT);
 
   // Create renderer
-  if(Detector.webgl)
-    renderer = new THREE.WebGLRenderer({antialias:true})
+  if (Detector.webgl)
+    renderer = new THREE.WebGLRenderer({ antialias: true })
   else
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -28,13 +29,13 @@ function init(){
 
   // Events
   THREEx.WindowResize(renderer, camera);
-  THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+  THREEx.FullScreen.bindKey({ charCode: 'm'.charCodeAt(0) });
 
   // Controls
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.25;
-  controls.target.set(-2 , 2, 11);
+  controls.target.set(-2, 2, 11);
   controls.update();
   controls.listenToKeyEvents(window);
 
@@ -52,49 +53,40 @@ function init(){
   addLighting(scene);
 
   // Floor
-  const texture = new THREE.TextureLoader().load("Textures/Road.jpeg");
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(100, 100);
-  const FloorMaterial = new THREE.MeshBasicMaterial({ map: texture });
-  const FloorGeometry = new THREE.PlaneGeometry(1000, 1000);
-  const Floor = new THREE.Mesh(FloorGeometry, FloorMaterial);
-  Floor.receiveShadow = true;
-  Floor.rotation.x = -Math.PI * 0.5;
-  scene.add(Floor);
+  createGrass(scene);
+  createRoad(scene);
 
   // Skybox
   createSkybox(scene);
 
   // Objects
-  loadHouse();
-  // loadCar();
-  // loadTree();
-  // loadStreetLamp();
-  // loadParkBench();
+  loadHouses();
+  loadCars();
+  loadTrees();
+  loadStreetLamp();
+  loadParkbench();
 }
 
-function animate(){
+function animate() {
   requestAnimationFrame(animate);
+  MoveCarsToNewPlace();
   render();
   update();
 }
 
-// update/collision detection
-
-function CreateCamera(scene, SCREEN_WIDTH, SCREEN_HEIGHT){
+function CreateCamera(scene, SCREEN_WIDTH, SCREEN_HEIGHT) {
   var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
   camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-  // scene.add(camera);
 
-  positionCamera(camera, -2, 2, 12);
+  // Move camera from center ---------------------------------------------------------------------------------
+  positionCamera(camera, -25, 3, 0);
 }
 
-function positionCamera(camera, x, y, z){
+function positionCamera(camera, x, y, z) {
   camera.position.set(x, y, z);
 }
 
-function addLighting(scene){
+function addLighting(scene) {
   // Define light
   const ambient = new THREE.AmbientLight(0x404040);
   scene.add(ambient);
@@ -121,7 +113,32 @@ function addLighting(scene){
   scene.add(rimLight);
 }
 
-function createSkybox(scene){
+function createGrass(scene) {
+  const texture = new THREE.TextureLoader().load("Textures/Grass.png");
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(100, 100);
+  const Material = new THREE.MeshBasicMaterial({ map: texture });
+  const Geometry = new THREE.PlaneGeometry(1000, 1000);
+  const grass = new THREE.Mesh(Geometry, Material);
+  grass.receiveShadow = true;
+  grass.rotation.x = -Math.PI * 0.5;
+  scene.add(grass);
+}
+
+function createRoad(scene) {
+  const texture = new THREE.TextureLoader().load("Textures/Road.jpeg");
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(30, 3);
+  const Material = new THREE.MeshBasicMaterial({ map: texture });
+  const Geometry = new THREE.BoxGeometry(50, 0.1, 10);
+  const road = new THREE.Mesh(Geometry, Material);
+  road.receiveShadow = true;
+  scene.add(road);
+}
+
+function createSkybox(scene) {
   const directions = [
     "Skybox/posx.jpg",
     "Skybox/negx.jpg",
@@ -145,7 +162,7 @@ function createSkybox(scene){
   scene.add(skyBox);
 }
 
-function update(){
+function update() {
   var moveSpeed = 0.5;
   var rotationSpeed = 0.02; // pi/2 radians (90 degrees) per second
 
@@ -178,23 +195,6 @@ function update(){
       camera.position.z += Math.cos(camera.rotation.y) * moveSpeed;
       camera.position.y += Math.sin(camera.rotation.x) * moveSpeed;
     }
-    // if(cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90){
-    //   camera.position.add(new THREE.Vector3(cameraRotationY * 2, 0, -1.6 + cameraRotationY).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(cameraRotationY * 2, 0, -1.6 + cameraRotationY).multiplyScalar(moveSpeed));
-    // }
-    // else if(cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180)
-    // {
-    //   camera.position.add(new THREE.Vector3(cameraRotationY * 2, 0, -1.6 + cameraRotationY).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(cameraRotationY * 2, 0, -1.6 + cameraRotationY).multiplyScalar(moveSpeed));
-    // }
-    // else if (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270){
-    //   camera.position.add(new THREE.Vector3(cameraRotationY * 2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(cameraRotationY * 2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
-    // }
-    // else if (cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360){
-    //   camera.position.add(new THREE.Vector3(cameraRotationY * 2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(cameraRotationY * 2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
-    // }
   }
 
   if (keyboard.pressed("S")) {
@@ -217,23 +217,6 @@ function update(){
       camera.position.y -= Math.sin(camera.rotation.x) * moveSpeed;
     }
 
-    // if(cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90){
-    //   camera.position.add(new THREE.Vector3(cameraRotationY * 2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(cameraRotationY * 2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
-    // }
-    // else if(cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180)
-    // {
-    //   camera.position.add(new THREE.Vector3(0, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(0, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
-    // }
-    // else if (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270){
-    //   camera.position.add(new THREE.Vector3(0, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(0, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
-    // }
-    // else if (cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360){
-    //   camera.position.add(new THREE.Vector3(cameraRotationY * -2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(cameraRotationY * -2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
-    // }
   }
 
   if (keyboard.pressed("A")) {
@@ -255,24 +238,6 @@ function update(){
       camera.position.z -= Math.sin(camera.rotation.y) * moveSpeed;
       camera.position.y -= Math.sin(camera.rotation.x) * moveSpeed;
     }
-
-    // if(cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90){
-    //   camera.position.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
-    // }
-    // else if(cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180)
-    // {
-    //   camera.position.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
-    // }
-    // else if (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270){
-    //   camera.position.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
-    // }
-    // else if (cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360){
-    //   camera.position.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
-    // }
   }
 
   if (keyboard.pressed("D")) {
@@ -295,23 +260,6 @@ function update(){
       camera.position.y += Math.sin(camera.rotation.x) * moveSpeed;
     }
 
-    // if(cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90){
-    //   camera.position.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
-    // }
-    // else if(cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180)
-    // {
-    //   camera.position.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
-    // }
-    // else if (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270){
-    //   camera.position.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
-    // }
-    // else if (cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360){
-    //   camera.position.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
-    //   controls.target.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
-    // }
   }
 
   if (keyboard.pressed("Q")) {
@@ -329,88 +277,124 @@ function update(){
 }
 
 
-function render(){
+function render() {
   renderer.render(scene, camera);
 }
 
-function loadHouse() {
-  const loader = new THREE.ColladaLoader();
-  loader.load("Objects/House/House.dae", function (dae) {
-    scene.add(dae.scene);
-  });
-}
+function loadHouses() {
+  const ColladaLoader = new THREE.ColladaLoader();
 
-function loadCar(){
-  const loader = new THREE.ColladaLoader();
-  loader.load("Objects/Car/LowPoly Muscle Cougar xr1970.dae", function (dae) {
-
-    dae.scene.position.x = 20;
-    dae.scene.position.y = 1;
-    dae.scene.position.z = 20;
-
-    scene.add(dae.scene);
-  });
-
-}
-
-function loadTree(){
-  const loader = new THREE.ColladaLoader();
-  loader.load("Objects/Tree/Tree.dae", function (dae) {
-    scene.add(dae.scene);
-  });
-
-  // saving
-  // loader.load("Objects/Tree/Tree.dae", function(dae) {
-  //     dae.scene.traverse( function ( child ) {
-  //         if ( child.isMesh ) {
-  //             child.material = material.clone();
-  //         }
-  //     } );
-  //     scene.add(dae.scene);
-  // });
-}
-
-function loadStreetLamp(){
-  const mtl_loader = new THREE.MTLLoader();
-  mtl_loader.load("Objects/Streetlamp/Street_Lamp_7.mtl", function (mat) {
-    mat.preload();
-    const loader = new THREE.OBJLoader();
-    loader.setMaterials(mat);
-    loader.load("Objects/Streetlamp/Street_Lamp_7.obj", function (obj) {
-      scene.add(obj);
+  for (let i = 0; i < 2; i++) {
+    ColladaLoader.load("Objects/House/House.dae", function (dae) {
+      MoveObj(dae.scene, i * 16 - 15, -14)
+      scene.add(dae.scene);
     });
-  });
-
-  // saving
-  // const loader = new THREE.OBJLoader();
-  // loader.load("Street_Lamp_7.obj", function(obj) {
-  //     obj.traverse( function ( child ) {
-  //         if ( child.isMesh ) {
-  //             child.material = material.clone();
-  //         }
-  //     } );
-  //     scene.add(obj);
-  // });
+  }
+  for (let i = 0; i < 2; i++) {
+    ColladaLoader.load("Objects/House/House.dae", function (dae) {
+      RotateObj(dae.scene, Math.PI);
+      MoveObj(dae.scene, i * 16 - 15, 14)
+      scene.add(dae.scene);
+    });
+  }
 }
 
-function loadParkBench(){
-  const mtl_loader = new THREE.MTLLoader();
-  mtl_loader.load("Objects/Parkbench/bench_low.mtl", function (mat) {
-    mat.preload();
-    const loader = new THREE.OBJLoader();
-    loader.setMaterials(mat);
-    loader.load("Objects/Parkbench/bench_low.obj", function (obj) {
-      scene.add(obj);
-    });
-  });
+function loadTrees() {
 
-  // saving
-  // mtl_loader.load("./Objects/Parkbench/bench_low.mtl", function(mat) {
-  //     mat.preload();
-  //     const loader = new THREE.OBJLoader();
-  //     loader.setMaterials(mat);
-  //     loader.load("./Objects/Parkbench/bench_low.obj", function(obj) {
-  //         scene.add(obj);
-  //     });
+  // loader.load("Objects/Tree/Tree.dae", function (dae) {
+  //   // dae.scene.scale.x = 0.5;
+  //   // dae.scene.scale.y = 0.5;
+  //   // dae.scene.scale.z = 0.5;
+  // dae.scene.traverse( function ( child ) {
+  //   if ( child.isMesh ) {
+  //       child.material = material.clone();
+  //   }
+  // } );
+  //   scene.add(dae.scene);
   // });
+
+}
+
+function loadCars() {
+  for (let i = 0; i < 3; i++) {
+    ColladaLoader.load("Objects/Car/LowPoly Muscle Cougar xr1970.dae", function (dae) {
+      Car[i] = dae.scene;
+      MoveObj(Car[i], i * 10, -10 + i * 10);
+      RotateObj(Car[i], Math.PI * 0.5)
+      MoveUp(Car[i]);
+      scene.add(Car[i]);
+    });
+  }
+}
+
+function loadStreetLamp() {
+  let mtl_loader = new THREE.MTLLoader();
+  mtl_loader.load("./Objects/Streetlamp/Street_Lamp_7.mtl", function (mat) {
+    mat.preload();
+
+    ObjLoader.setMaterials(mat);
+    for (let i = 0; i < 3; i++) {
+      ObjLoader.load("./Objects/Streetlamp/Street_Lamp_7.obj", function (obj) {
+        MoveObj(obj, ((i + 5) * 7) - 27.5, -5);
+        ScaleObj(obj, 2);
+        scene.add(obj);
+      });
+    }
+  });
+}
+
+function loadParkbench() {
+  let mtl_loader = new THREE.MTLLoader();
+  mtl_loader.load("./Objects/Parkbench/bench_low.mtl", function (mat) {
+    mat.preload();
+
+    ObjLoader.setMaterials(mat);
+    for (let i = 0; i < 3; i++) {
+      ObjLoader.load("./Objects/Parkbench/bench_low.obj", function (obj) {
+        ScaleObj(obj, 0.01);
+        MoveObj(obj, (i + 4) * 7 - 25, -5);
+        scene.add(obj);
+      });
+    }
+  });
+}
+
+function RotateObj(scene, angle) {
+  scene.rotation.z = angle;
+}
+
+function MoveObj(scene, x, z) {
+  scene.position.x = x;
+  scene.position.y = 0;
+  scene.position.z = z;
+}
+
+function MoveUp(scene) {
+  scene.position.y += 1;
+}
+
+function ScaleObj(scene, factor) {
+  scene.scale.x = factor;
+  scene.scale.y = factor;
+  scene.scale.z = factor;
+}
+
+var dir = [1, 1, 1];
+function MoveCarsToNewPlace() {
+  if (Car) {
+    if (Car.length > 0) {
+      for (let i = 0; i < 3; i++) {
+        if (Car[i].position.x > 25) {
+          RotateObj(Car[i], Car[i].rotation.z + Math.PI);
+          dir[i] = -1;
+        }
+        if (Car[i].position.x < -25) {
+          RotateObj(Car[i], Car[i].rotation.z + Math.PI);
+          dir[i] = 1;
+        }
+        MoveObj(Car[i], Car[i].position.x + dir[i] * 0.3, -3 + i * 3);
+        MoveUp(Car[i]);
+      };
+    }
+  }
 }
