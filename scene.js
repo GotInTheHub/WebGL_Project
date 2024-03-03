@@ -1,8 +1,6 @@
 // Global variables
 var renderer, scene, camera, container, controls, stats, pivot;
-const textureLoader = new THREE.TextureLoader();
 const ColladaLoader = new THREE.ColladaLoader();
-const ObjLoader = new THREE.OBJLoader();
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
 const Car = [];
@@ -27,6 +25,10 @@ function init() {
   container = document.getElementById('ThreeJS');
   container.appendChild(renderer.domElement);
 
+  // Create ShadowMap
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
   // Events
   THREEx.WindowResize(renderer, camera);
   THREEx.FullScreen.bindKey({ charCode: 'm'.charCodeAt(0) });
@@ -35,7 +37,7 @@ function init() {
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.25;
-  controls.target.set(-2, 2, 11);
+  controls.target.set(10, 3, 0);
   controls.update();
   controls.listenToKeyEvents(window);
 
@@ -47,8 +49,16 @@ function init() {
   container.appendChild(stats.domElement);
 
   // Lighting
+  //Create a DirectionalLight and turn on shadows for the light
   var light = new THREE.DirectionalLight(0xffffff);
+
   light.position.set(0, 255, 0);
+  light.castShadow = true; // default false
+  light.shadow.mapSize.width = 512; // default
+  light.shadow.mapSize.height = 512; // default
+  light.shadow.camera.near = 0.5; // default
+  light.shadow.camera.far = 500; // default
+
   scene.add(light);
   addLighting(scene);
 
@@ -97,16 +107,10 @@ function addLighting(scene) {
   keyLight.position.set(-80, 60, 80);
   scene.add(keyLight);
 
-  //keyLightHelper = new THREE.DirectionalLightHelper(keyLight, 15);
-  //scene.add(keyLightHelper);
-
   // Directional - FILL LIGHT
   fillLight = new THREE.DirectionalLight(0xdddddd, .3);
   fillLight.position.set(80, 40, 40);
   scene.add(fillLight);
-
-  //fillLightHelper = new THREE.DirectionalLightHelper(fillLight, 15);
-  //scene.add(fillLightHelper);
 
   // Directional - RIM LIGHT
   rimLight = new THREE.DirectionalLight(0xdddddd, .6);
@@ -115,27 +119,40 @@ function addLighting(scene) {
 }
 
 function createGrass(scene) {
+  //Create Grass Texture
   const texture = new THREE.TextureLoader().load("Textures/Grass.png");
+  //Make sure the texture repeats for the whole Floor 10000 times
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(100, 100);
-  const Material = new THREE.MeshBasicMaterial({ map: texture });
+  const Material = new THREE.MeshStandardMaterial(
+    {
+      map: texture,
+      roughness: 0.0,
+    }
+  );
   const Geometry = new THREE.PlaneGeometry(1000, 1000);
+  //Create the Object
   const grass = new THREE.Mesh(Geometry, Material);
   grass.receiveShadow = true;
   grass.rotation.x = -Math.PI * 0.5;
+  //Add The object to the scene
   scene.add(grass);
 }
 
 function createRoad(scene) {
+  //Create Grass Texture
   const texture = new THREE.TextureLoader().load("Textures/Road.jpeg");
+  //Make sure the texture repeats for the whole Floor 10000 times
   texture.wrapS = THREE.RepeatWrapping;
   texture.wrapT = THREE.RepeatWrapping;
   texture.repeat.set(30, 3);
   const Material = new THREE.MeshBasicMaterial({ map: texture });
+  //Create the Object
   const Geometry = new THREE.BoxGeometry(50, 0.1, 10);
   const road = new THREE.Mesh(Geometry, Material);
   road.receiveShadow = true;
+  //Add The object to the scene
   scene.add(road);
 }
 
@@ -153,7 +170,7 @@ function createSkybox(scene) {
     materialArray.push(
       new THREE.MeshBasicMaterial({
         map: THREE.ImageUtils.loadTexture(directions[i]),
-        side: THREE.BackSide,
+        side: THREE.BackSide
       })
     );
   }
@@ -316,12 +333,14 @@ function loadCars() {
 
 function loadStreetLamp() {
   let mtl_loader = new THREE.MTLLoader();
+  let objLoader = new THREE.OBJLoader();
+
   mtl_loader.load("./Objects/Streetlamp/Street_Lamp_7.mtl", function (mat) {
     mat.preload();
 
-    ObjLoader.setMaterials(mat);
+    objLoader.setMaterials(mat);
     for (let i = 0; i < 3; i++) {
-      ObjLoader.load("./Objects/Streetlamp/Street_Lamp_7.obj", function (obj) {
+      objLoader.load("./Objects/Streetlamp/Street_Lamp_7.obj", function (obj) {
         MoveObj(obj, ((i + 5) * 7) - 27.5, -5);
         ScaleObj(obj, 2);
         scene.add(obj);
@@ -332,12 +351,14 @@ function loadStreetLamp() {
 
 function loadParkbench() {
   let mtl_loader = new THREE.MTLLoader();
+  let objLoader = new THREE.OBJLoader();
+
   mtl_loader.load("./Objects/Parkbench/bench_low.mtl", function (mat) {
     mat.preload();
 
-    ObjLoader.setMaterials(mat);
+    objLoader.setMaterials(mat);
     for (let i = 0; i < 3; i++) {
-      ObjLoader.load("./Objects/Parkbench/bench_low.obj", function (obj) {
+      objLoader.load("./Objects/Parkbench/bench_low.obj", function (obj) {
         ScaleObj(obj, 0.01);
         MoveObj(obj, (i + 4) * 7 - 25, -5);
         scene.add(obj);
