@@ -30,16 +30,11 @@ function init(){
   THREEx.WindowResize(renderer, camera);
   THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 
-  // Pivot
-  pivot = new THREE.Object3D();
-  scene.add(pivot);
-  pivot.add(camera);
-
   // Controls
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.25;
-  controls.target.set(0, 0, 0);
+  controls.target.set(-2 , 2, 11);
   controls.update();
   controls.listenToKeyEvents(window);
 
@@ -90,18 +85,13 @@ function animate(){
 function CreateCamera(scene, SCREEN_WIDTH, SCREEN_HEIGHT){
   var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
   camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-  scene.add(camera);
+  // scene.add(camera);
 
-  PositionCamera(camera, -2, 2, 12);
-  aimCamera(camera, scene.position);
+  positionCamera(camera, -2, 2, 12);
 }
 
-function PositionCamera(camera, x, y, z){
+function positionCamera(camera, x, y, z){
   camera.position.set(x, y, z);
-}
-
-function aimCamera(camera, x, y, z){
-  camera.lookAt({x, y, z});
 }
 
 function addLighting(scene){
@@ -156,106 +146,190 @@ function createSkybox(scene){
 }
 
 function update(){
-  var delta = clock.getDelta(); // seconds.
   var moveSpeed = 0.5;
   var rotationSpeed = 0.02; // pi/2 radians (90 degrees) per second
 
-  const frontVector = new THREE.Vector3(0, 0, -1);
-  const rightVector = new THREE.Vector3(1, 0, 0);
-  const moveDirection = new THREE.Vector3();
+  // controls.target.y = camera.position.y;
 
-  controls.target.y = camera.position.y;
+  const euler = new THREE.Euler(0, 0, 0, "YXZ");
+  euler.setFromQuaternion(camera.quaternion);
+  // retrive the value of the rotation on the y axis in degrees within 0 - 360
+  const cameraRotationY = camera.rotation.y;
+  const rotationXInDegrees = (THREE.MathUtils.radToDeg(euler.x) + 360) % 360;
+  const cameraRotationYDegrees = (THREE.MathUtils.radToDeg(euler.y) + 360) % 360;
+  const rotationZInDegrees = (THREE.MathUtils.radToDeg(euler.z) + 360) % 360;
 
   if (keyboard.pressed("W")) {
-    // controls.target.z -= moveSpeed;
-    // camera.position.set(controls.target.x, camera.position.y, controls.target.z);
-    // // camera.translateOnAxis(new THREE.Vector3(0, 0, -1), moveSpeed);
+    if (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90 || cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360) {
+      controls.target.x -= Math.sin(camera.rotation.y) * moveSpeed;
+      controls.target.z -= Math.cos(camera.rotation.y) * moveSpeed;
+      controls.target.y += Math.sin(camera.rotation.x) * moveSpeed;
 
-    moveDirection.add(frontVector);
+      camera.position.x -= Math.sin(camera.rotation.y) * moveSpeed;
+      camera.position.z -= Math.cos(camera.rotation.y) * moveSpeed;
+      camera.position.y += Math.sin(camera.rotation.x) * moveSpeed;
+    }
+    if (cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180 || cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270) {
+      controls.target.x += Math.sin(camera.rotation.y) * moveSpeed;
+      controls.target.z += Math.cos(camera.rotation.y) * moveSpeed;
+      controls.target.y += Math.sin(camera.rotation.x) * moveSpeed;
+
+      camera.position.x += Math.sin(camera.rotation.y) * moveSpeed;
+      camera.position.z += Math.cos(camera.rotation.y) * moveSpeed;
+      camera.position.y += Math.sin(camera.rotation.x) * moveSpeed;
+    }
+    // if(cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90){
+    //   camera.position.add(new THREE.Vector3(cameraRotationY * 2, 0, -1.6 + cameraRotationY).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(cameraRotationY * 2, 0, -1.6 + cameraRotationY).multiplyScalar(moveSpeed));
+    // }
+    // else if(cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180)
+    // {
+    //   camera.position.add(new THREE.Vector3(cameraRotationY * 2, 0, -1.6 + cameraRotationY).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(cameraRotationY * 2, 0, -1.6 + cameraRotationY).multiplyScalar(moveSpeed));
+    // }
+    // else if (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270){
+    //   camera.position.add(new THREE.Vector3(cameraRotationY * 2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(cameraRotationY * 2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
+    // }
+    // else if (cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360){
+    //   camera.position.add(new THREE.Vector3(cameraRotationY * 2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(cameraRotationY * 2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
+    // }
   }
+
   if (keyboard.pressed("S")) {
-    // controls.target.z += moveSpeed;
-    // camera.position.set(controls.target.x, camera.position.y, controls.target.z);
-    // // camera.translateOnAxis(new THREE.Vector3(0, 0, 1), moveSpeed);
+    if (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 180) {
+      controls.target.x += Math.sin(camera.rotation.y) * moveSpeed;
+      controls.target.z += Math.cos(camera.rotation.y) * moveSpeed;
+      controls.target.y -= Math.sin(camera.rotation.x) * moveSpeed;
 
-    moveDirection.sub(frontVector);
+      camera.position.x += Math.sin(camera.rotation.y) * moveSpeed;
+      camera.position.z += Math.cos(camera.rotation.y) * moveSpeed;
+      camera.position.y -= Math.sin(camera.rotation.x) * moveSpeed;
+    }
+    else if (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 360) {
+      controls.target.x -= Math.sin(camera.rotation.y) * moveSpeed;
+      controls.target.z -= Math.cos(camera.rotation.y) * moveSpeed;
+      controls.target.y -= Math.sin(camera.rotation.x) * moveSpeed;
+
+      camera.position.x -= Math.sin(camera.rotation.y) * moveSpeed;
+      camera.position.z -= Math.cos(camera.rotation.y) * moveSpeed;
+      camera.position.y -= Math.sin(camera.rotation.x) * moveSpeed;
+    }
+
+    // if(cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90){
+    //   camera.position.add(new THREE.Vector3(cameraRotationY * 2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(cameraRotationY * 2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
+    // }
+    // else if(cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180)
+    // {
+    //   camera.position.add(new THREE.Vector3(0, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(0, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
+    // }
+    // else if (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270){
+    //   camera.position.add(new THREE.Vector3(0, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(0, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
+    // }
+    // else if (cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360){
+    //   camera.position.add(new THREE.Vector3(cameraRotationY * -2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(cameraRotationY * -2, 0, 1.6 - cameraRotationY).multiplyScalar(moveSpeed));
+    // }
   }
+
   if (keyboard.pressed("A")) {
-    // controls.target.x -= moveSpeed;
-    // camera.position.set(controls.target.x, camera.position.y, controls.target.z);
-    // // camera.translateOnAxis(new THREE.Vector3(-1, 0, 0), moveSpeed);
+    if (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 180) {
+      controls.target.x -= Math.cos(camera.rotation.y) * moveSpeed;
+      controls.target.z += Math.sin(camera.rotation.y) * moveSpeed;
+      controls.target.y -= Math.sin(camera.rotation.x) * moveSpeed;
 
-    moveDirection.sub(rightVector);
+      camera.position.x -= Math.cos(camera.rotation.y) * moveSpeed;
+      camera.position.z += Math.sin(camera.rotation.y) * moveSpeed;
+      camera.position.y -= Math.sin(camera.rotation.x) * moveSpeed;
+    }
+    else if (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 360) {
+      controls.target.x += Math.cos(camera.rotation.y) * moveSpeed;
+      controls.target.z -= Math.sin(camera.rotation.y) * moveSpeed;
+      controls.target.y -= Math.sin(camera.rotation.x) * moveSpeed;
+
+      camera.position.x += Math.cos(camera.rotation.y) * moveSpeed;
+      camera.position.z -= Math.sin(camera.rotation.y) * moveSpeed;
+      camera.position.y -= Math.sin(camera.rotation.x) * moveSpeed;
+    }
+
+    // if(cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90){
+    //   camera.position.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
+    // }
+    // else if(cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180)
+    // {
+    //   camera.position.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
+    // }
+    // else if (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270){
+    //   camera.position.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
+    // }
+    // else if (cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360){
+    //   camera.position.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
+    // }
   }
+
   if (keyboard.pressed("D")) {
-    // controls.target.x += moveSpeed;
-    // camera.position.set(controls.target.x, camera.position.y, controls.target.z);
-    // // camera.translateOnAxis(new THREE.Vector3(1, 0, 0), moveSpeed);
+    if (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 180) {
+      controls.target.x += Math.cos(camera.rotation.y) * moveSpeed;
+      controls.target.z -= Math.sin(camera.rotation.y) * moveSpeed;
+      controls.target.y += Math.sin(camera.rotation.x) * moveSpeed;
 
-    moveDirection.add(rightVector);
+      camera.position.x += Math.cos(camera.rotation.y) * moveSpeed;
+      camera.position.z -= Math.sin(camera.rotation.y) * moveSpeed;
+      camera.position.y += Math.sin(camera.rotation.x) * moveSpeed;
+    }
+    else if (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 360) {
+      controls.target.x -= Math.cos(camera.rotation.y) * moveSpeed;
+      controls.target.z += Math.sin(camera.rotation.y) * moveSpeed;
+      controls.target.y += Math.sin(camera.rotation.x) * moveSpeed;
+
+      camera.position.x -= Math.cos(camera.rotation.y) * moveSpeed;
+      camera.position.z += Math.sin(camera.rotation.y) * moveSpeed;
+      camera.position.y += Math.sin(camera.rotation.x) * moveSpeed;
+    }
+
+    // if(cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90){
+    //   camera.position.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
+    // }
+    // else if(cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180)
+    // {
+    //   camera.position.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
+    // }
+    // else if (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270){
+    //   camera.position.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(-1.6 + cameraRotationY, 0, cameraRotationY * 2).multiplyScalar(moveSpeed));
+    // }
+    // else if (cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360){
+    //   camera.position.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
+    //   controls.target.add(new THREE.Vector3(1.6 - cameraRotationY, 0, cameraRotationY * -2).multiplyScalar(moveSpeed));
+    // }
   }
 
-  moveDirection.applyQuaternion(camera.quaternion);
-  controls.target.add(moveDirection.multiplyScalar(moveSpeed));
-  camera.position.add(moveDirection.multiplyScalar(moveSpeed));
-
-
-  const yAxis = new THREE.Vector3(0, 1, 0);
   if (keyboard.pressed("Q")) {
-    camera.rotateOnAxis(yAxis, rotationSpeed);
-  }
-  if (keyboard.pressed("E")) {
-    camera.rotateOnAxis(yAxis, -rotationSpeed);
+    camera.translateOnAxis(new THREE.Vector3(1, 0, 0), moveSpeed);
+    console.log(cameraRotationY);
   }
 
-  camera.lookAt(new THREE.Vector3());
+  if (keyboard.pressed("E")) {
+    camera.translateOnAxis(new THREE.Vector3(-1, 0, 0), moveSpeed);
+    console.log(cameraRotationY);
+  }
 
   controls.update();
   stats.update();
-
-  /*// Expansion for WASDQE keys
-			case "KeyW":
-				//zoom in
-				dollyIn( getZoomScale() );
-				needsUpdate = true;
-				break;
-			
-			case "KeyS":
-				//zoom out
-				dollyOut( getZoomScale() );
-				needsUpdate = true;
-				break;
-			
-			case "KeyA":
-				// pan left
-				pan( scope.keyPanSpeed, 0 );
-				needsUpdate = true;
-				break;
-
-			case "KeyD":
-				// pan right
-				pan( - scope.keyPanSpeed, 0 );
-				needsUpdate = true;
-				break;
-			
-			case "KeyQ":
-				// rotate left
-				scope.enableDamping == false ? scope.enableDamping = true : scope.enableDamping = false;
-				rotateLeft( Math.PI * scope.rotateSpeed * scope.dampingFactor );
-				needsUpdate = true;
-				break;
-
-			case "KeyE":
-				// rotate right
-				scope.enableDamping == false ? scope.enableDamping = true : scope.enableDamping = false;
-				rotateLeft( -Math.PI * scope.rotateSpeed * scope.dampingFactor );
-				needsUpdate = true;
-				break;*/
 }
 
 
 function render(){
-  // temp
   renderer.render(scene, camera);
 }
 
@@ -269,7 +343,6 @@ function loadHouse() {
 function loadCar(){
   const loader = new THREE.ColladaLoader();
   loader.load("Objects/Car/LowPoly Muscle Cougar xr1970.dae", function (dae) {
-    console.log(dae);
 
     dae.scene.position.x = 20;
     dae.scene.position.y = 1;
