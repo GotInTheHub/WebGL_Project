@@ -77,6 +77,7 @@ function animate() {
 function CreateCamera(scene, SCREEN_WIDTH, SCREEN_HEIGHT) {
   var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
   camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+  scene.add(camera);
 
   // Move camera from center ---------------------------------------------------------------------------------
   positionCamera(camera, -25, 3, 0);
@@ -164,111 +165,97 @@ function createSkybox(scene) {
 
 function update() {
   var moveSpeed = 0.5;
-  var rotationSpeed = 0.02; // pi/2 radians (90 degrees) per second
-
-  // controls.target.y = camera.position.y;
+  var rotationSpeed = 0.1;
 
   const euler = new THREE.Euler(0, 0, 0, "YXZ");
   euler.setFromQuaternion(camera.quaternion);
-  // retrive the value of the rotation on the y axis in degrees within 0 - 360
   const cameraRotationY = camera.rotation.y;
-  const rotationXInDegrees = (THREE.MathUtils.radToDeg(euler.x) + 360) % 360;
+  // retrive the value of the rotation on the y axis in degrees within 0 - 360
   const cameraRotationYDegrees = (THREE.MathUtils.radToDeg(euler.y) + 360) % 360;
-  const rotationZInDegrees = (THREE.MathUtils.radToDeg(euler.z) + 360) % 360;
 
   if (keyboard.pressed("W")) {
     if (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90 || cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360) {
       controls.target.x -= Math.sin(camera.rotation.y) * moveSpeed;
       controls.target.z -= Math.cos(camera.rotation.y) * moveSpeed;
-      controls.target.y += Math.sin(camera.rotation.x) * moveSpeed;
+      controls.target.y += Math.sin(Math.min(camera.rotation.x - camera.rotation.z)) * moveSpeed;
 
       camera.position.x -= Math.sin(camera.rotation.y) * moveSpeed;
       camera.position.z -= Math.cos(camera.rotation.y) * moveSpeed;
-      camera.position.y += Math.sin(camera.rotation.x) * moveSpeed;
+      camera.position.y += Math.sin(Math.min(camera.rotation.x - camera.rotation.z)) * moveSpeed;
     }
-    if (cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180 || cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270) {
-      controls.target.x += Math.sin(camera.rotation.y) * moveSpeed;
+    else if (cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180 || cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270) {
+      controls.target.x -= Math.sin(camera.rotation.y) * moveSpeed;
       controls.target.z += Math.cos(camera.rotation.y) * moveSpeed;
-      controls.target.y += Math.sin(camera.rotation.x) * moveSpeed;
+      controls.target.y -= Math.sin(Math.min(camera.rotation.x + camera.rotation.z)) * moveSpeed;
 
-      camera.position.x += Math.sin(camera.rotation.y) * moveSpeed;
+      camera.position.x -= Math.sin(camera.rotation.y) * moveSpeed;
       camera.position.z += Math.cos(camera.rotation.y) * moveSpeed;
-      camera.position.y += Math.sin(camera.rotation.x) * moveSpeed;
+      camera.position.y -= Math.sin(Math.min(camera.rotation.x + camera.rotation.z)) * moveSpeed;
     }
   }
 
   if (keyboard.pressed("S")) {
-    if (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 180) {
+    if (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90 || cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360) {
       controls.target.x += Math.sin(camera.rotation.y) * moveSpeed;
       controls.target.z += Math.cos(camera.rotation.y) * moveSpeed;
-      controls.target.y -= Math.sin(camera.rotation.x) * moveSpeed;
+      controls.target.y -= Math.sin(Math.min(camera.rotation.x - camera.rotation.z)) * moveSpeed;
 
       camera.position.x += Math.sin(camera.rotation.y) * moveSpeed;
       camera.position.z += Math.cos(camera.rotation.y) * moveSpeed;
-      camera.position.y -= Math.sin(camera.rotation.x) * moveSpeed;
+      camera.position.y -= Math.sin(Math.min(camera.rotation.x - camera.rotation.z)) * moveSpeed;
     }
-    else if (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 360) {
-      controls.target.x -= Math.sin(camera.rotation.y) * moveSpeed;
+    else if (cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180 || cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270) {
+      controls.target.x += Math.sin(camera.rotation.y) * moveSpeed;
       controls.target.z -= Math.cos(camera.rotation.y) * moveSpeed;
-      controls.target.y -= Math.sin(camera.rotation.x) * moveSpeed;
+      controls.target.y += Math.sin(Math.min(camera.rotation.x + camera.rotation.z)) * moveSpeed;
 
-      camera.position.x -= Math.sin(camera.rotation.y) * moveSpeed;
+      camera.position.x += Math.sin(camera.rotation.y) * moveSpeed;
       camera.position.z -= Math.cos(camera.rotation.y) * moveSpeed;
-      camera.position.y -= Math.sin(camera.rotation.x) * moveSpeed;
-    }
-
-  }
-
-  if (keyboard.pressed("A")) {
-    if (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 180) {
-      controls.target.x -= Math.cos(camera.rotation.y) * moveSpeed;
-      controls.target.z += Math.sin(camera.rotation.y) * moveSpeed;
-      controls.target.y -= Math.sin(camera.rotation.x) * moveSpeed;
-
-      camera.position.x -= Math.cos(camera.rotation.y) * moveSpeed;
-      camera.position.z += Math.sin(camera.rotation.y) * moveSpeed;
-      camera.position.y -= Math.sin(camera.rotation.x) * moveSpeed;
-    }
-    else if (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 360) {
-      controls.target.x += Math.cos(camera.rotation.y) * moveSpeed;
-      controls.target.z -= Math.sin(camera.rotation.y) * moveSpeed;
-      controls.target.y -= Math.sin(camera.rotation.x) * moveSpeed;
-
-      camera.position.x += Math.cos(camera.rotation.y) * moveSpeed;
-      camera.position.z -= Math.sin(camera.rotation.y) * moveSpeed;
-      camera.position.y -= Math.sin(camera.rotation.x) * moveSpeed;
+      camera.position.y += Math.sin(Math.min(camera.rotation.x + camera.rotation.z)) * moveSpeed;
     }
   }
 
   if (keyboard.pressed("D")) {
-    if (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 180) {
+    if (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90 || cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360) {
       controls.target.x += Math.cos(camera.rotation.y) * moveSpeed;
       controls.target.z -= Math.sin(camera.rotation.y) * moveSpeed;
-      controls.target.y += Math.sin(camera.rotation.x) * moveSpeed;
 
       camera.position.x += Math.cos(camera.rotation.y) * moveSpeed;
       camera.position.z -= Math.sin(camera.rotation.y) * moveSpeed;
-      camera.position.y += Math.sin(camera.rotation.x) * moveSpeed;
     }
-    else if (cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 360) {
+    else if (cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180 || cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270) {
+      controls.target.x -= Math.cos(camera.rotation.y) * moveSpeed;
+      controls.target.z -= Math.sin(camera.rotation.y) * moveSpeed;
+
+      camera.position.x -= Math.cos(camera.rotation.y) * moveSpeed;
+      camera.position.z -= Math.sin(camera.rotation.y) * moveSpeed;
+    }
+  }
+
+  if (keyboard.pressed("A")) {
+    if (cameraRotationYDegrees >= 0 && cameraRotationYDegrees <= 90 || cameraRotationYDegrees > 270 && cameraRotationYDegrees <= 360) {
       controls.target.x -= Math.cos(camera.rotation.y) * moveSpeed;
       controls.target.z += Math.sin(camera.rotation.y) * moveSpeed;
-      controls.target.y += Math.sin(camera.rotation.x) * moveSpeed;
 
       camera.position.x -= Math.cos(camera.rotation.y) * moveSpeed;
       camera.position.z += Math.sin(camera.rotation.y) * moveSpeed;
-      camera.position.y += Math.sin(camera.rotation.x) * moveSpeed;
     }
+    else if (cameraRotationYDegrees > 90 && cameraRotationYDegrees <= 180 || cameraRotationYDegrees > 180 && cameraRotationYDegrees <= 270) {
+      controls.target.x += Math.cos(camera.rotation.y) * moveSpeed;
+      controls.target.z += Math.sin(camera.rotation.y) * moveSpeed;
 
+      camera.position.x += Math.cos(camera.rotation.y) * moveSpeed;
+      camera.position.z += Math.sin(camera.rotation.y) * moveSpeed;
+    }
   }
 
   if (keyboard.pressed("Q")) {
-    camera.translateOnAxis(new THREE.Vector3(1, 0, 0), moveSpeed);
+    camera.translateOnAxis(new THREE.Vector3(1, 0, 0), rotationSpeed);
     console.log(cameraRotationY);
   }
 
   if (keyboard.pressed("E")) {
-    camera.translateOnAxis(new THREE.Vector3(-1, 0, 0), moveSpeed);
+    camera.translateOnAxis(new THREE.Vector3(-1, 0, 0), rotationSpeed);
     console.log(cameraRotationY);
   }
 
