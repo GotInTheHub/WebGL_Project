@@ -50,9 +50,9 @@ function init() {
 
   // Lighting
   //Create a DirectionalLight and turn on shadows for the light
-  var light = new THREE.DirectionalLight(0xffffff);
+  var light = new THREE.DirectionalLight(0xffffff, 1);
 
-  light.position.set(0, 255, 0);
+  light.position.set(0, 1, 0);
   light.castShadow = true; // default false
   light.shadow.mapSize.width = 512; // default
   light.shadow.mapSize.height = 512; // default
@@ -60,6 +60,7 @@ function init() {
   light.shadow.camera.far = 500; // default
 
   scene.add(light);
+
   addLighting(scene);
 
   // Floor
@@ -348,6 +349,8 @@ function loadStreetLamp() {
       objLoader.load("./Objects/Streetlamp/Street_Lamp_7.obj", function (obj) {
         MoveObj(obj, ((i + 5) * 7) - 27.5, -5);
         ScaleObj(obj, 2);
+        obj.castShadow = true; //default is false
+        obj.receiveShadow = false; //default
         scene.add(obj);
       });
     }
@@ -366,6 +369,8 @@ function loadParkbench() {
       objLoader.load("./Objects/Parkbench/bench_low.obj", function (obj) {
         ScaleObj(obj, 0.01);
         MoveObj(obj, (i + 4) * 7 - 25, -5);
+        obj.castShadow = true; //default is false
+        obj.receiveShadow = false; //default
         scene.add(obj);
       });
     }
